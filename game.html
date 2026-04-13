@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>FluxFall Ultimate</title>
+
+<style>
+body { margin:0; background:black; overflow:hidden; font-family:sans-serif; }
+
+canvas {
+    position:absolute;
+    width:100vw;
+    height:100vh;
+    top:0;
+    left:0;
+}
+
+#hud {
+    position:absolute;
+    top:10px;
+    left:10px;
+    color:white;
+}
+
+#topRight {
+    position:absolute;
+    top:10px;
+    right:10px;
+}
+
+button {
+    padding:6px 12px;
+    margin:2px;
+    cursor:pointer;
+}
+
+.screen {
+    position:absolute;
+    width:100vw;
+    height:100vh;
+    background:black;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+    color:white;
+    z-index:10;
+}
+</style>
+</head>
+
+<body>
+
+<div id="startScreen" class="screen">
+    <h1>⚡ FluxFall</h1>
+    <button onclick="startGame()">Start</button>
+    <p>High Score: <span id="highScore">0</span></p>
+</div>
+
+<div id="gameOverScreen" class="screen" style="display:none;">
+    <h2>Game Over</h2>
+    <p id="finalScore"></p>
+    <button onclick="restartGame()">Restart</button>
+</div>
+
+<div id="hud">
+Score: <span id="score">0</span><br>
+Lives: <span id="lives">0</span>
+</div>
+
+<div id="topRight">
+<button onclick="pauseGame()">⏸</button>
+<button onclick="changeSkin()">🎨</button>
+</div>
+
+<canvas id="gameCanvas"></canvas>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+function resize(){ canvas.width=innerWidth; canvas.height=innerHeight; }
+window.addEventListener("resize",resize);
+resize();
+
+// Sounds
+const catchSound=new Audio("https://www.soundjay.com/button/beep-07.wav");
+
+// State
+let player, blocks=[], boss=null;
+let score=0, lives=0, gameRunning=false, paused=false;
+let keys={left:false,right:false};
+let spawnTimer=0;
+let skin=0;
+
+// Leaderboard
+let highScore = localStorage.getItem("fluxHigh") || 0;
+document.getElementById("highScore").innerText = highScore;
+
+// Controls
+document.addEventListener("keydown",e=>{
+if(e.key==="ArrowLeft") keys.left=true;
+if(e.key==="ArrowRight") keys.right=true;
+
+// Dash
+if(e.key===" "){ player.vx*=2; }
+});
+document.addEventListener("keyup",e=>{
+if(e.key==="ArrowLeft") keys.left=false;
+if(e.key==="ArrowRight") keys.right=false;
+});
+
+// Start
+function startGame(){
+document.getElementById("startScreen").style.display="none";
+
+player={x:canvas.width/2-60,y:canvas.height-60,w:120,h:18,vx:0};
+blocks=[]; boss=null;
+score=0; lives=20;
+spawnTimer=0;
+
+gameRunning=true;
+loop();
+}
+
+// Restart
+function restartGame(){
+document.getElementById("gameOverScreen").style.display="none";
+startGame();
+}
+
+// Pause
+function pauseGame(){ paused=!paused; if(!paused) loop(); }
+
+// Skin
+function changeSkin(){ skin=(skin+1)%3; }
+
+// Spawn
+function spawnBlock(){
+blocks.push({x:Math.random()*(canvas.width-40),y:0,size:40});
+}
+
+// Boss spawn
+function spawnBoss(){
+boss={x:canvas.width/2-50,y:0,size:100,hp:40};
+}
+
+// Update
+function update(){
+if(paused) return;
+
+// Movement
+let accel=1, maxSpeed=14, friction=0.9;
+if(keys.left) player.vx-=accel;
+if(keys.right) player.vx+=accel;
+
+player.vx=Math.max(-maxSpeed,Math.min(maxSpeed,player.vx));
+player.vx*=friction;
+player.x+=player.vx;
+
+if(player.x<0) player.x=0;
+if(player.x+player.w>canvas.width) player.x=canvas.width-player.w;
+
+// Spawn logic
+spawnTimer--;
+if(spawnTimer<=0){
+spawnBlock();
+let delay=Math.max(10,70-score*0.3);
+spawnTimer=delay;
+}
+
+// Speed
+let speed=Math.min(8,2+score*0.02);
+
+// Blocks
+blocks.forEach((b,i)=>{
+b.y+=speed;
+
+if(b.y+b.size>player.y && b.x>player.x && b.x<player.x+player.w){
+score++;
+catchSound.play();
+blocks.splice(i,1);
+}
+
+if(b.y>canvas.height){
+lives--;
+blocks.splice(i,1);
+}
+});
+
+// Boss trigger
+if(score>100 && !boss) spawnBoss();
+
+// Boss
+if(boss){
+boss.y+=1;
+
+if(boss.y+boss.size>player.y && boss.x<player.x+player.w && boss.x+boss.size>player.x){
+boss.hp--;
+score+=2;
+}
+
+if(boss.hp<=0){
+boss=null;
+score+=50;
+}
+}
+
+// Game over
+if(lives<=0){
+gameRunning=false;
+
+// Save high score
+if(score>highScore){
+localStorage.setItem("fluxHigh",score);
+}
+
+document.getElementById("finalScore").innerText="Score: "+score;
+document.getElementById("gameOverScreen").style.display="flex";
+}
+
+document.getElementById("score").innerText=score;
+document.getElementById("lives").innerText=lives;
+}
+
+// Draw
+function draw(){
+ctx.fillStyle="black";
+ctx.fillRect(0,0,canvas.width,canvas.height);
+
+// Skins
+let colors=["cyan","lime","orange"];
+let pColor=colors[skin];
+
+// Player
+ctx.fillStyle=pColor;
+ctx.fillRect(player.x,player.y,player.w,player.h);
+
+// Blocks
+ctx.fillStyle="white";
+blocks.forEach(b=>{
+ctx.beginPath();
+ctx.arc(b.x+b.size/2,b.y+b.size/2,b.size/2,0,Math.PI*2);
+ctx.fill();
+});
+
+// Boss
+if(boss){
+ctx.fillStyle="red";
+ctx.fillRect(boss.x,boss.y,boss.size,boss.size);
+
+// HP bar
+ctx.fillStyle="lime";
+ctx.fillRect(20,20,boss.hp*4,10);
+}
+}
+
+// Loop
+function loop(){
+if(!gameRunning || paused) return;
+update();
+draw();
+requestAnimationFrame(loop);
+}
+</script>
+
+</body>
+</html>
