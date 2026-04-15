@@ -1,0 +1,290 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  font-family: "Space Grotesk", sans-serif;
+  background: transparent;
+  color: #ffffff;
+  isolation: isolate;
+}
+
+.site-bg-video {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(0.85) brightness(0.5);
+  z-index: -2;
+  pointer-events: none;
+}
+
+.site-bg-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at top left, rgba(230, 43, 30, 0.12), transparent 28%),
+    linear-gradient(180deg, rgba(9, 9, 9, 0.84), rgba(4, 4, 4, 0.8));
+}
+
+.register-shell {
+  min-height: 100vh;
+  padding: 48px 7%;
+}
+
+.register-grid {
+  display: grid;
+  grid-template-columns: 0.95fr 1.05fr;
+  gap: 36px;
+  align-items: start;
+}
+
+.register-intro,
+.register-panel {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 28px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+  box-shadow: 0 24px 56px rgba(0, 0, 0, 0.25);
+}
+
+.register-intro {
+  padding: 34px;
+  position: sticky;
+  top: 28px;
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 26px;
+  color: #d7d7d7;
+}
+
+.eyebrow {
+  color: #e62b1e;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.82rem;
+  margin-bottom: 16px;
+}
+
+.register-intro h1 {
+  font-size: 3rem;
+  line-height: 1.08;
+  margin-bottom: 18px;
+}
+
+.lead {
+  color: #c8c8c8;
+  font-size: 1.06rem;
+  line-height: 1.8;
+}
+
+.register-highlights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 26px;
+}
+
+.register-chip {
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(230, 43, 30, 0.12);
+  border: 1px solid rgba(230, 43, 30, 0.18);
+  color: #ffffff;
+  font-size: 0.92rem;
+}
+
+.register-panel {
+  padding: 34px;
+}
+
+.register-form {
+  display: grid;
+  gap: 20px;
+}
+
+.field,
+.field-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.field-grid {
+  grid-template-columns: 1fr 180px;
+  gap: 18px;
+}
+
+label {
+  color: #efefef;
+  font-size: 0.96rem;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  color: #ffffff;
+  font: inherit;
+}
+
+textarea {
+  resize: vertical;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid rgba(230, 43, 30, 0.55);
+  outline-offset: 2px;
+}
+
+.submit-btn {
+  border: 0;
+  padding: 16px 22px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #e62b1e, #ff6432);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 26px rgba(230, 43, 30, 0.22);
+}
+
+.form-note {
+  color: #a9a9a9;
+  font-size: 0.95rem;
+  margin-top: 12px;
+  min-height: 20px;
+}
+
+.form-note.success {
+  color: #4ade80;
+  font-weight: 600;
+}
+
+.form-note.error {
+  color: #ff6b6b;
+  font-weight: 600;
+}
+
+/* Error State for Form Fields */
+.field.error input,
+.field.error select,
+.field.error textarea {
+  border-color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.1);
+}
+
+input:invalid:not(:placeholder-shown),
+select:invalid,
+textarea:invalid:not(:placeholder-shown) {
+  border-color: rgba(255, 107, 107, 0.5);
+}
+
+/* Success State */
+input:valid:not(:placeholder-shown),
+select:valid,
+textarea:valid:not(:placeholder-shown) {
+  border-color: rgba(74, 222, 128, 0.5);
+}
+
+@media (max-width: 900px) {
+  .register-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .register-intro {
+    position: static;
+  }
+
+  .register-intro h1 {
+    font-size: 2.4rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .register-shell {
+    padding: 20px 4%;
+    min-height: auto;
+  }
+
+  .register-intro,
+  .register-panel {
+    padding: 20px 16px;
+    border-radius: 18px;
+  }
+
+  .register-intro h1 {
+    font-size: 1.8rem;
+    margin-bottom: 12px;
+  }
+
+  .eyebrow {
+    font-size: 0.75rem;
+    letter-spacing: 0.16em;
+  }
+
+  .lead {
+    font-size: 0.98rem;
+    line-height: 1.6;
+  }
+
+  .register-highlights {
+    gap: 8px;
+    margin-top: 16px;
+  }
+
+  .register-chip {
+    font-size: 0.85rem;
+    padding: 8px 12px;
+  }
+
+  .register-form {
+    gap: 16px;
+  }
+
+  .field-grid {
+    grid-template-columns: 1fr;
+  }
+
+  label {
+    font-size: 0.9rem;
+  }
+
+  input,
+  select,
+  textarea {
+    padding: 12px 14px;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  .submit-btn {
+    padding: 14px 18px;
+    font-size: 1rem;
+  }
+
+  .form-note {
+    font-size: 0.9rem;
+  }
+
+  .back-link {
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+  }
+}

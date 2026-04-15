@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TEDx CUSAT - FluxFall Game</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body { 
+    font-family: 'Space Grotesk', sans-serif; 
+    background: transparent;
+    overflow: hidden;
+    color: white;
+    isolation: isolate;
+}
+
+.site-bg-video {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: saturate(0.85) brightness(0.45);
+    z-index: -2;
+    pointer-events: none;
+}
+
+.site-bg-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(9, 9, 9, 0.75), rgba(4, 4, 4, 0.7));
+}
+
+canvas {
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    display: block;
+}
+
+#hud {
+    position: absolute;
+    top: 25px;
+    left: 25px;
+    color: white;
+    z-index: 5;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    background: rgba(10, 10, 10, 0.6);
+    padding: 16px 20px;
+    border-radius: 12px;
+    border: 1px solid rgba(230, 43, 30, 0.2);
+    backdrop-filter: blur(8px);
+}
+
+#hud div {
+    margin: 6px 0;
+}
+
+#topRight {
+    position: absolute;
+    top: 25px;
+    right: 25px;
+    z-index: 5;
+    display: flex;
+    gap: 10px;
+}
+
+button, .nav-link {
+    background: #e62b1e;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    font-size: 1rem;
+    font-weight: 700;
+    font-family: 'Space Grotesk', sans-serif;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+    box-shadow: 0 4px 15px rgba(230, 43, 30, 0.2);
+    text-decoration: none;
+    display: inline-block;
+}
+
+button:hover, .nav-link:hover {
+    background: #ff3a2b;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(230, 43, 30, 0.4);
+}
+
+button:active {
+    transform: translateY(-1px);
+}
+
+.nav-link {
+    padding: 10px 16px;
+    font-size: 0.95rem;
+}
+
+.screen {
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(135deg, rgba(20, 10, 10, 0.9), rgba(10, 10, 10, 0.95));
+    backdrop-filter: blur(12px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+    z-index: 10;
+}
+
+.screen h1 {
+    font-size: 3.2rem;
+    background: linear-gradient(135deg, #e62b1e, #ff7a2f);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 16px;
+    text-shadow: 0 0 40px rgba(230, 43, 30, 0.6);
+    letter-spacing: 2px;
+}
+
+.screen h2 {
+    font-size: 2.6rem;
+    margin-bottom: 20px;
+}
+
+.screen p {
+    font-size: 1.1rem;
+    color: #aaaaaa;
+    margin-bottom: 28px;
+    line-height: 1.6;
+}
+
+.screen span {
+    color: #e62b1e;
+    font-weight: 700;
+}
+
+.screen button {
+    margin: 10px;
+    padding: 14px 32px;
+    font-size: 1.1rem;
+}
+
+#nav-back {
+    position: absolute;
+    top: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 5;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    box-shadow: none;
+}
+
+#nav-back:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.footer-text {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.85rem;
+    color: #666;
+    z-index: 5;
+}
+
+@media (max-width: 800px) {
+    #topRight {
+        gap: 6px;
+    }
+
+    button, .nav-link {
+        padding: 10px 14px;
+        font-size: 0.9rem;
+    }
+
+    .screen h1 {
+        font-size: 2.4rem;
+    }
+
+    .screen h2 {
+        font-size: 2rem;
+    }
+
+    #hud {
+        top: 15px;
+        left: 15px;
+        font-size: 0.95rem;
+        padding: 12px 16px;
+    }
+}
+</style>
+</head>
+
+<body>
+<video class="site-bg-video" autoplay muted loop playsinline>
+    <source src="media/hero-video.mp4" type="video/mp4" />
+</video>
+<div class="site-bg-overlay" aria-hidden="true"></div>
+
+<a href="index.html" id="nav-back">← Back to TEDx CUSAT</a>
+
+<div id="startScreen" class="screen">
+    <h1>⚡ FluxFall</h1>
+    <p>Catch the falling energy blocks and avoid the Boss.<br>Higher difficulty = Bigger rewards!</p>
+    <button onclick="startGame()">Start Game</button>
+    <p>🏆 High Score: <span id="highScore">0</span></p>
+</div>
+
+<div id="gameOverScreen" class="screen" style="display: none;">
+    <h2>Game Over</h2>
+    <p id="finalScore" style="font-size: 2rem; margin-bottom: 20px;"></p>
+    <p id="gameMessage"></p>
+    <button onclick="restartGame()">Play Again</button>
+    <button onclick="window.location.href='index.html'" style="background: transparent; border: 1px solid rgba(255,255,255,0.2); color: white;">Back Home</button>
+</div>
+
+<div id="hud">
+    <div>Score: <span id="score">0</span></div>
+    <div>Lives: <span id="lives">0</span></div>
+    <div style="font-size: 0.9rem; color: #aaa; margin-top: 8px;">Use ← → to move</div>
+</div>
+
+<div id="topRight">
+    <button onclick="pauseGame()" title="Pause Game">⏸ Pause</button>
+    <button onclick="changeSkin()" title="Change Skin">🎨 Skin</button>
+</div>
+
+<canvas id="gameCanvas"></canvas>
+
+<div class="footer-text">TEDx CUSAT 2026 | Ideas Worth Spreading</div>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+function resize(){ 
+    canvas.width = innerWidth; 
+    canvas.height = innerHeight; 
+}
+window.addEventListener("resize", resize);
+resize();
+
+// State
+let player, blocks = [], boss = null;
+let score = 0, lives = 0, gameRunning = false, paused = false;
+let keys = { left: false, right: false };
+let spawnTimer = 0;
+let skin = 0;
+let pausedFrame = null;
+
+// Leaderboard
+let highScore = localStorage.getItem("fluxHigh") || 0;
+document.getElementById("highScore").innerText = highScore;
+
+// Catch sound using Web Audio API
+function playCatchSound() {
+    try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.frequency.value = 800;
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        gainNode.gain.setValueAtTime(1, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.1);
+    } catch(e) {}
+}
+
+// Controls
+document.addEventListener("keydown", e => {
+    if(e.key === "ArrowLeft") keys.left = true;
+    if(e.key === "ArrowRight") keys.right = true;
+    if(e.key === " ") { 
+        pauseGame();
+        e.preventDefault();
+    }
+});
+
+document.addEventListener("keyup", e => {
+    if(e.key === "ArrowLeft") keys.left = false;
+    if(e.key === "ArrowRight") keys.right = false;
+});
+
+// Mouse/Touch Control
+document.addEventListener("mousemove", e => {
+    if(!gameRunning || paused) return;
+    player.x = e.clientX - player.w / 2;
+    if(player.x < 0) player.x = 0;
+    if(player.x + player.w > canvas.width) player.x = canvas.width - player.w;
+});
+
+document.addEventListener("touchmove", e => {
+    if(!gameRunning || paused) return;
+    player.x = e.touches[0].clientX - player.w / 2;
+    if(player.x < 0) player.x = 0;
+    if(player.x + player.w > canvas.width) player.x = canvas.width - player.w;
+    e.preventDefault();
+}, { passive: false });
+
+// Start
+function startGame(){
+    document.getElementById("startScreen").style.display = "none";
+    
+    player = { x: canvas.width/2 - 60, y: canvas.height - 60, w: 120, h: 18, vx: 0 };
+    blocks = []; 
+    boss = null;
+    score = 0; 
+    lives = 20;
+    spawnTimer = 0;
+    
+    gameRunning = true;
+    loop();
+}
+
+// Restart
+function restartGame(){
+    document.getElementById("gameOverScreen").style.display = "none";
+    startGame();
+}
+
+// Pause
+function pauseGame(){ 
+    if(!gameRunning) return;
+    paused = !paused; 
+    if(!paused) loop(); 
+}
+
+// Skin
+function changeSkin(){ 
+    skin = (skin + 1) % 3; 
+}
+
+// Spawn Block
+function spawnBlock(){
+    blocks.push({ x: Math.random() * (canvas.width - 40), y: 0, size: 40 });
+}
+
+// Boss spawn
+function spawnBoss(){
+    boss = { x: canvas.width/2 - 50, y: 0, size: 100, hp: 40 };
+}
+
+// Update
+function update(){
+    if(paused) return;
+
+    // Movement
+    let accel = 1.5, maxSpeed = 20, friction = 0.88;
+    if(keys.left) player.vx -= accel;
+    if(keys.right) player.vx += accel;
+
+    player.vx = Math.max(-maxSpeed, Math.min(maxSpeed, player.vx));
+    player.vx *= friction;
+    player.x += player.vx;
+
+    if(player.x < 0) player.x = 0;
+    if(player.x + player.w > canvas.width) player.x = canvas.width - player.w;
+
+    // Spawn logic
+    spawnTimer--;
+    if(spawnTimer <= 0){
+        spawnBlock();
+        let delay = Math.max(8, 40 - score * 0.4);
+        spawnTimer = delay;
+    }
+
+    // Speed increases with score
+    let speed = Math.min(15, 5 + score * 0.05);
+
+    // Blocks
+    blocks.forEach((b, i) => {
+        b.y += speed;
+
+        if(b.y + b.size > player.y && b.x > player.x && b.x < player.x + player.w){
+            score++;
+            playCatchSound();
+            blocks.splice(i, 1);
+        }
+
+        if(b.y > canvas.height){
+            lives--;
+            blocks.splice(i, 1);
+        }
+    });
+
+    // Boss trigger
+    if(score > 100 && !boss) spawnBoss();
+
+    // Boss
+    if(boss){
+        boss.y += 1;
+
+        if(boss.y + boss.size > player.y && boss.x < player.x + player.w && boss.x + boss.size > player.x){
+            boss.hp--;
+            score += 2;
+        }
+
+        if(boss.hp <= 0){
+            boss = null;
+            score += 50;
+        }
+    }
+
+    // Game over
+    if(lives <= 0){
+        gameRunning = false;
+
+        if(score > highScore){
+            localStorage.setItem("fluxHigh", score);
+            document.getElementById("highScore").innerText = score;
+        }
+
+        document.getElementById("finalScore").innerText = "Score: " + score;
+        
+        let message = "";
+        if(score > 200) message = "🎉 Incredible! You're a FluxFall Master!";
+        else if(score > 150) message = "🏆 Amazing! Great skills!";
+        else if(score > 100) message = "👏 Good job! Keep practicing!";
+        else if(score > 50) message = "💪 Nice try! Try again!";
+        else message = "🎮 You can do better!";
+        
+        document.getElementById("gameMessage").innerText = message;
+        document.getElementById("gameOverScreen").style.display = "flex";
+    }
+
+    document.getElementById("score").innerText = score;
+    document.getElementById("lives").innerText = lives;
+}
+
+// Draw
+function draw(){
+    // Trail effect
+    ctx.fillStyle = "rgba(9, 9, 9, 0.25)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Skins
+    let colors = ["#00f0ff", "#39ff14", "#ff7b00"];
+    let pColor = colors[skin];
+
+    // Player
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = pColor;
+    ctx.fillStyle = pColor;
+    ctx.fillRect(player.x, player.y, player.w, player.h);
+    ctx.shadowBlur = 0;
+
+    // Blocks
+    ctx.fillStyle = "#ffffff";
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = "rgba(255,255,255,0.5)";
+    blocks.forEach(b => {
+        ctx.beginPath();
+        ctx.arc(b.x + b.size/2, b.y + b.size/2, b.size/2, 0, Math.PI * 2);
+        ctx.fill();
+    });
+    ctx.shadowBlur = 0;
+
+    // Boss
+    if(boss){
+        ctx.shadowBlur = 30;
+        ctx.shadowColor = "#e62b1e";
+        ctx.fillStyle = "#e62b1e";
+        ctx.fillRect(boss.x, boss.y, boss.size, boss.size);
+
+        // HP bar
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
+        ctx.fillRect(20, 20, 240, 12);
+        ctx.fillStyle = "#39ff14";
+        ctx.fillRect(20, 20, boss.hp * 6, 12);
+        ctx.strokeStyle = "#fff";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(20, 20, 240, 12);
+    }
+}
+
+// Loop
+function loop(){
+    if(!gameRunning || paused) return;
+    update();
+    draw();
+    requestAnimationFrame(loop);
+}
+</script>
+
+</body>
+</html>
